@@ -11,6 +11,7 @@ import { downloadText, fileStamp, readFileText } from '../files';
 import { canPromptInstall, isIOS, isStandalone, promptInstall } from '../install';
 import { requestRender, type View } from '../router';
 import { accountSection } from './account';
+import { legalLinks } from './legal';
 import { getSession } from '../../cloud/session';
 
 const BACKUP_KEY = 'stats-ultimate-plouf:last-backup';
@@ -145,6 +146,7 @@ export function settingsView(): View {
       h('div', { class: 'stack' },
         h('button', { class: 'btn', type: 'button', onclick: () => void loadDemo() }, 'Charger des données d’exemple'),
         h('button', { class: 'btn btn--danger-ghost', type: 'button', onclick: () => void wipe() }, 'Tout effacer'))),
+    section('Informations légales', legalLinks()),
     h('p', { class: 'hint center' }, 'Stats Ultimate · Les Plouf — version 0.1.0'),
   );
   return { el };

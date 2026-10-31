@@ -5,6 +5,7 @@ import { setConflictResolver, startSync, stopSync, subscribeSync } from './cloud
 import { subscribe } from './store';
 import { openConflictDialog, openPasswordDialog, syncBadge } from './ui/views/account';
 import { authView } from './ui/views/auth';
+import { legalView, type LegalPage } from './ui/views/legal';
 import { h, icon } from './ui/dom';
 import { initInstallPrompt } from './ui/install';
 import { parseHash, setRenderer, type Route, type View } from './ui/router';
@@ -30,8 +31,21 @@ const NAV: { href: string; label: string; icon: string; routes: Route['name'][] 
 
 const TITLES: Record<Route['name'], string> = {
   matchs: 'Matchs', live: 'Saisie', match: 'Match', effectif: 'Effectif', stats: 'Statistiques',
-  joueur: 'Joueur', meteo: 'Météo', reglages: 'Réglages', tournois: 'Tournois', tournoi: 'Tournoi', feuille: 'Feuille de match',
+  joueur: 'Joueur', meteo: 'Météo', reglages: 'Réglages', tournois: 'Tournois', tournoi: 'Tournoi', feuille: 'Feuille de match', legal: 'Informations légales',
 };
+
+// Anti-« clickjacking » : l'appli refuse de s'afficher dans un cadre (iframe) d'un autre site,
+// qui pourrait piéger les clics sur le formulaire de connexion. (GitHub Pages ne permet pas
+// l'en-tête HTTP frame-ancestors, d'où cette protection en JavaScript.)
+if (window.top !== window.self) {
+  try {
+    window.top!.location.href = window.self.location.href;
+  } catch {
+    /* navigation du cadre parent bloquée : on n'affiche simplement rien */
+  }
+  document.body.textContent = 'Pour ta sécurité, ouvre Stats Ultimate directement dans ton navigateur.';
+  throw new Error('Affichage dans un cadre refusé.');
+}
 
 const root = document.getElementById('app');
 if (!root) throw new Error('Élément #app introuvable.');
@@ -56,12 +70,16 @@ function renderRoot(): boolean {
     return false;
   }
   if (s.status === 'signed_out') {
-    authHost.replaceChildren(authView(renderRoot));
+    const route = parseHash(window.location.hash);
+    // Les pages légales restent lisibles sans être connecté.
+    authHost.replaceChildren(route.name === 'legal'
+      ? legalView(route.params.page as LegalPage, { signedOut: true })
+      : authView(renderRoot));
     if (root!.firstChild !== authHost) {
       root!.replaceChildren(authHost);
       window.scrollTo(0, 0);
     }
-    document.title = 'Connexion · Stats Ultimate · Les Plouf';
+    document.title = `${route.name === 'legal' ? 'Informations légales' : 'Connexion'} · Stats Ultimate · Les Plouf`;
     return false;
   }
   if (root!.firstChild !== shell) {
@@ -87,6 +105,7 @@ function buildView(route: Route): View {
     case 'tournois': return tournamentsView();
     case 'tournoi': return tournamentView(route.params);
     case 'feuille': return sheetView(route.params);
+    case 'legal': return { el: legalView(route.params.page as LegalPage) };
     default: return matchesView();
   }
 }
@@ -141,6 +160,7 @@ function render(): void {
 setRenderer(render);
 subscribe(render);
 window.addEventListener('hashchange', render);
+window.addEventListener('hashchange', () => { if (getSession().status === 'signed_out') window.scrollTo(0, 0); });
 initInstallPrompt();
 
 /* ---------- Compte et synchronisation ---------- */

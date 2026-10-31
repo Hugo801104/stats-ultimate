@@ -1,7 +1,7 @@
 // Routage par hash (#/...) : fonctionne hors-ligne et sans configuration serveur.
 
 export interface Route {
-  name: 'matchs' | 'live' | 'match' | 'effectif' | 'stats' | 'joueur' | 'meteo' | 'reglages' | 'tournois' | 'tournoi' | 'feuille';
+  name: 'matchs' | 'live' | 'match' | 'effectif' | 'stats' | 'joueur' | 'meteo' | 'reglages' | 'tournois' | 'tournoi' | 'feuille' | 'legal';
   params: Record<string, string>;
 }
 
@@ -12,6 +12,10 @@ export function parseHash(hash: string): Route {
   switch (first) {
     case 'tournois':
       return { name: 'tournois', params: {} };
+    case 'mentions-legales':
+    case 'confidentialite':
+    case 'conditions':
+      return { name: 'legal', params: { page: first } };
     case 'tournoi':
       return id ? { name: 'tournoi', params: { id } } : { name: 'tournois', params: {} };
     case 'feuille':

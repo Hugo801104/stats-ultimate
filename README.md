@@ -48,6 +48,13 @@ Authentication → URL Configuration :
 Le service d'e-mails intégré de Supabase est limité (quelques e-mails par heure) : suffisant pour une équipe ;
 au-delà, brancher un SMTP (Authentication → Emails → SMTP Settings).
 
+## Sécurité et informations légales
+
+- Audit, mesures en place et réglages restant à faire : voir [SECURITY.md](SECURITY.md).
+- Pages Mentions légales, Confidentialité et Conditions d'utilisation : `#/mentions-legales`,
+  `#/confidentialite`, `#/conditions` (accessibles sans compte). Contenu dans `src/ui/views/legal.ts`.
+- Base : migrations dans `supabase/migrations/` (RLS, anti-flood, suppression de compte).
+
 ## Déploiement sur GitHub Pages
 
 1. Crée un dépôt GitHub et pousse le projet sur la branche `main`.

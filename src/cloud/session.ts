@@ -149,6 +149,15 @@ export async function signOut(): Promise<void> {
   applySession(null);
 }
 
+/** Droit à l'effacement : supprime définitivement le compte et ses données en ligne. */
+export async function deleteAccount(): Promise<void> {
+  const sb = await getClient();
+  const { error } = await sb.rpc('delete_my_account');
+  if (error) throw new Error(friendlyAuthError(error));
+  await sb.auth.signOut({ scope: 'local' }).catch(() => undefined);
+  applySession(null);
+}
+
 export function continueWithoutAccount(): void {
   try {
     localStorage.setItem(MODE_KEY, 'local');

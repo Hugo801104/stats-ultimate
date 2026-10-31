@@ -150,6 +150,11 @@ async function push(base: number | null): Promise<boolean> {
   const { data, error } = await sb.rpc('save_app_state', { p_data: getState(), p_base_revision: base });
   if (error) {
     if (error.code === '40001') return false;
+    // Anti-flood côté base (1 écriture/s) : on réessaie un peu plus tard, sans erreur.
+    if (error.code === 'PT429') {
+      schedulePush();
+      return true;
+    }
     throw error;
   }
   const row = (Array.isArray(data) ? data[0] : data) as { revision: number } | undefined;

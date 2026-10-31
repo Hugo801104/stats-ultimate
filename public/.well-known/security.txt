@@ -1,0 +1,5 @@
+Contact: mailto:hugo.jasmin1104@gmail.com
+Expires: 2027-10-31T00:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: https://hugo801104.github.io/stats-ultimate/.well-known/security.txt
+Policy: https://github.com/Hugo801104/stats-ultimate/blob/main/SECURITY.md

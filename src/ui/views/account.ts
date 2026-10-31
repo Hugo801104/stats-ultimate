@@ -1,7 +1,7 @@
 // Compte et synchronisation : section des réglages, indicateur, dialogues (conflit, nouveau mot de passe).
 
 import { cloudEnabled } from '../../cloud/client';
-import { dismissRecovery, getSession, goToSignIn, signOut, updatePassword } from '../../cloud/session';
+import { deleteAccount, dismissRecovery, getSession, goToSignIn, signOut, updatePassword } from '../../cloud/session';
 import { clearLocalAfterSignOut, flushBeforeSignOut, getSyncInfo, syncNow, type ConflictInfo, type SyncStatus } from '../../cloud/sync';
 import { backupJson } from '../../exporters';
 import { getState } from '../../store';
@@ -62,6 +62,10 @@ export function accountSection(): HTMLElement {
       h('button', { class: 'btn', type: 'button', onclick: () => openPasswordDialog(false) }, 'Changer le mot de passe'),
       h('button', { class: 'btn btn--danger-ghost', type: 'button', onclick: () => void signOutFlow() }, 'Se déconnecter'),
     ),
+    h('details', { class: 'danger-zone' },
+      h('summary', null, 'Supprimer mon compte'),
+      h('p', { class: 'hint' }, 'Efface définitivement ton compte et toutes tes données en ligne. Télécharge d’abord une sauvegarde si tu veux les garder.'),
+      h('button', { class: 'btn btn--danger', type: 'button', onclick: () => openDeleteDialog() }, 'Supprimer définitivement mon compte')),
   );
 }
 
@@ -85,6 +89,42 @@ async function signOutFlow(): Promise<void> {
   }
   clearLocalAfterSignOut();
   toast('Déconnecté.');
+}
+
+function openDeleteDialog(): void {
+  const s = getSession();
+  const input = h('input', { type: 'text', autocomplete: 'off', placeholder: 'SUPPRIMER' });
+  const error = h('p', { class: 'form-error', role: 'alert', hidden: true });
+  const submit = h('button', { class: 'btn btn--danger', type: 'submit' }, 'Supprimer définitivement');
+  const form = h('form', { class: 'form', novalidate: true },
+    h('p', null, 'Le compte ', h('b', null, s.email ?? ''), ' et toutes ses données en ligne seront effacés immédiatement. C’est irréversible.'),
+    h('button', { class: 'btn btn--small', type: 'button', onclick: () => {
+      downloadText(`plouf-sauvegarde-${fileStamp()}.json`, backupJson(getState()), 'application/json');
+      toast('Sauvegarde téléchargée.', { kind: 'success' });
+    } }, 'Télécharger d’abord une sauvegarde'),
+    field('Pour confirmer, tape SUPPRIMER', input),
+    error,
+    h('div', { class: 'modal__actions' }, submit));
+  const modal = openModal('Supprimer mon compte', form);
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (input.value.trim().toUpperCase() !== 'SUPPRIMER') {
+      error.textContent = 'Tape SUPPRIMER pour confirmer.';
+      error.hidden = false;
+      return;
+    }
+    submit.disabled = true;
+    try {
+      await deleteAccount();
+      clearLocalAfterSignOut();
+      modal.close();
+      toast('Compte et données supprimés.', { kind: 'success' });
+    } catch (err) {
+      error.textContent = errorMessage(err);
+      error.hidden = false;
+      submit.disabled = false;
+    }
+  });
 }
 
 /* ---------- Conflit : deux versions différentes ---------- */

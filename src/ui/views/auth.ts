@@ -3,6 +3,7 @@
 import { clearNotice, continueWithoutAccount, getSession, sendPasswordReset, signIn, signUp } from '../../cloud/session';
 import { errorMessage, segmented } from '../components';
 import { h } from '../dom';
+import { legalLinks } from './legal';
 
 type Tab = 'connexion' | 'inscription' | 'oubli';
 
@@ -23,6 +24,7 @@ export function authView(rerender: () => void): HTMLElement {
     placeholder: ui.tab === 'inscription' ? '8 caractères minimum' : '',
   });
   const confirm = h('input', { type: 'password', autocomplete: 'new-password', required: true, minlength: 8 });
+  const consent = h('input', { type: 'checkbox', required: true, id: 'auth-consent' });
 
   const submit = h('button', { class: 'btn btn--primary btn--block btn--xl', type: 'submit' },
     ui.tab === 'connexion' ? 'Se connecter' : ui.tab === 'inscription' ? 'Créer mon compte' : 'Envoyer le lien');
@@ -40,6 +42,10 @@ export function authView(rerender: () => void): HTMLElement {
     ui.tab === 'inscription'
       ? h('div', { class: 'field' }, h('label', { for: 'auth-pw2' }, 'Confirme le mot de passe'), Object.assign(confirm, { id: 'auth-pw2' }))
       : null,
+    ui.tab === 'inscription'
+      ? h('label', { class: 'check auth__consent', for: 'auth-consent' }, consent,
+        h('span', null, 'J’accepte les ', h('a', { href: '#/conditions' }, 'conditions d’utilisation'), ' et j’ai lu la ', h('a', { href: '#/confidentialite' }, 'politique de confidentialité'), '.'))
+      : null,
     error,
     info,
     submit,
@@ -53,6 +59,7 @@ export function authView(rerender: () => void): HTMLElement {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) return showError('Adresse e-mail invalide.');
     if (ui.tab !== 'oubli' && password.value.length < 8) return showError('Le mot de passe doit faire au moins 8 caractères.');
     if (ui.tab === 'inscription' && password.value !== confirm.value) return showError('Les deux mots de passe ne correspondent pas.');
+    if (ui.tab === 'inscription' && !consent.checked) return showError('Pour créer un compte, accepte les conditions d’utilisation.');
     submit.disabled = true;
     submit.textContent = 'Un instant…';
     try {
@@ -100,5 +107,6 @@ export function authView(rerender: () => void): HTMLElement {
       h('button', { class: 'btn btn--block', type: 'button', onclick: () => continueWithoutAccount() }, 'Continuer sans compte'),
       h('p', { class: 'hint center' }, 'Sans compte, les données restent dans ce navigateur. Tu pourras te connecter plus tard depuis les Réglages : elles seront alors envoyées dans ton espace.'),
     ),
+    legalLinks(),
   );
 }
