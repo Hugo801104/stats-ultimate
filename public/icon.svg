@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Stats Ultimate">
+  <rect width="512" height="512" rx="112" fill="#0b6e69"/>
+  <g transform="rotate(-18 256 270)">
+    <ellipse cx="256" cy="270" rx="168" ry="78" fill="#ffffff"/>
+    <ellipse cx="256" cy="262" rx="118" ry="48" fill="none" stroke="#0b6e69" stroke-width="14"/>
+    <ellipse cx="256" cy="258" rx="58" ry="20" fill="#0b6e69" opacity="0.18"/>
+  </g>
+  <path d="M96 400 H170 M206 400 H416" stroke="#7ee0d6" stroke-width="18" stroke-linecap="round" fill="none"/>
+  <path d="M110 128 L196 112 M214 108 L268 98" stroke="#7ee0d6" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.8"/>
+</svg>
