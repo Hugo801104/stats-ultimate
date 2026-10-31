@@ -1,6 +1,7 @@
 // Client Supabase, chargé à la demande (le reste de l'appli fonctionne sans lui, hors-ligne).
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { KEY_PREFIX } from '../legacyKeys';
 
 const URL = (import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
@@ -20,7 +21,7 @@ export function getClient(): Promise<SupabaseClient> {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storageKey: 'stats-ultimate-plouf:auth',
+        storageKey: `${KEY_PREFIX}auth`,
       },
     }),
   );

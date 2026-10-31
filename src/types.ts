@@ -1,4 +1,4 @@
-// Modèle de données de Stats Ultimate · Les Plouf.
+// Modèle de données de Stats Ultimate.
 // Tout est sérialisable en JSON (stockage local + export de sauvegarde).
 
 export type Position = 'handler' | 'cutter' | 'polyvalent';

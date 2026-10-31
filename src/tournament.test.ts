@@ -9,7 +9,7 @@ import type { GameRules, TeamSide, TournamentGame } from './types';
 const MIN = 60_000;
 
 function game(rules: Partial<GameRules> = {}): TournamentGame {
-  return newGame({ label: '', field: '', time: '', teamA: 'Plouf', teamB: 'Disc Jockeys', scorekeeper: 'Les Frisés', rules: { ...DEFAULT_RULES, ...rules } });
+  return newGame({ label: '', field: '', time: '', teamA: 'Albatros', teamB: 'Disc Jockeys', scorekeeper: 'Les Frisés', rules: { ...DEFAULT_RULES, ...rules } });
 }
 
 /** Ajoute des points à des minutes données : [['A', 3], ['B', 5]…]. */
@@ -120,13 +120,13 @@ describe('tournoi', () => {
     expect(validateGame({ ...d, teamB: '' })).toMatch(/deux équipes/);
   });
   it('bilan sur les matchs terminés', () => {
-    const t = newTournament('Toussaint', '2026-10-31', '', ['Plouf', 'Disc Jockeys'], DEFAULT_RULES);
+    const t = newTournament('Toussaint', '2026-10-31', '', ['Albatros', 'Disc Jockeys'], DEFAULT_RULES);
     const g1 = play(game(), [...series('A', 3), ['B', 9]]);
     finishGame(g1);
     const g2 = play(game(), [['B', 2]]); // en cours : ignoré
     t.games.push(g1, g2);
     const [first, second] = standings(t);
-    expect(first).toMatchObject({ team: 'Plouf', won: 1, pointsFor: 3, pointsAgainst: 1 });
+    expect(first).toMatchObject({ team: 'Albatros', won: 1, pointsFor: 3, pointsAgainst: 1 });
     expect(second).toMatchObject({ team: 'Disc Jockeys', lost: 1 });
   });
   it('les tournois survivent à la sauvegarde / restauration', () => {

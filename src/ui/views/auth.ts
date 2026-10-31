@@ -4,6 +4,7 @@ import { clearNotice, continueWithoutAccount, getSession, sendPasswordReset, sig
 import { errorMessage, segmented } from '../components';
 import { h } from '../dom';
 import { legalLinks } from './legal';
+import { passwordProblem } from '../../cloud/password';
 
 type Tab = 'connexion' | 'inscription' | 'oubli';
 
@@ -21,7 +22,7 @@ export function authView(rerender: () => void): HTMLElement {
   const password = h('input', {
     type: 'password', required: true, minlength: 8,
     autocomplete: ui.tab === 'inscription' ? 'new-password' : 'current-password',
-    placeholder: ui.tab === 'inscription' ? '8 caractères minimum' : '',
+    placeholder: ui.tab === 'inscription' ? '8 caractères, lettres et chiffres' : '',
   });
   const confirm = h('input', { type: 'password', autocomplete: 'new-password', required: true, minlength: 8 });
   const consent = h('input', { type: 'checkbox', required: true, id: 'auth-consent' });
@@ -57,7 +58,11 @@ export function authView(rerender: () => void): HTMLElement {
     error.hidden = true;
     const mail = email.value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) return showError('Adresse e-mail invalide.');
-    if (ui.tab !== 'oubli' && password.value.length < 8) return showError('Le mot de passe doit faire au moins 8 caractères.');
+    if (ui.tab === 'connexion' && password.value.length === 0) return showError('Saisis ton mot de passe.');
+    if (ui.tab === 'inscription') {
+      const weak = passwordProblem(password.value, mail);
+      if (weak) return showError(weak);
+    }
     if (ui.tab === 'inscription' && password.value !== confirm.value) return showError('Les deux mots de passe ne correspondent pas.');
     if (ui.tab === 'inscription' && !consent.checked) return showError('Pour créer un compte, accepte les conditions d’utilisation.');
     submit.disabled = true;
@@ -96,7 +101,7 @@ export function authView(rerender: () => void): HTMLElement {
 
   return h('div', { class: 'auth' },
     h('div', { class: 'auth__card' },
-      h('div', { class: 'auth__brand' }, h('span', { class: 'auth__logo', 'aria-hidden': 'true' }, '🥏'), h('div', null, h('h1', null, 'Stats Ultimate'), h('p', { class: 'muted' }, 'Les Plouf'))),
+      h('div', { class: 'auth__brand' }, h('span', { class: 'auth__logo', 'aria-hidden': 'true' }, '🥏'), h('div', null, h('h1', null, 'Stats Ultimate'), h('p', { class: 'muted' }, 'Stats, tournois et feuilles de match'))),
       h('p', { class: 'auth__pitch' }, 'Connecte-toi pour retrouver tes matchs, tournois et stats sur tous tes appareils. Tout reste utilisable hors-ligne.'),
       ui.tab === 'oubli'
         ? h('div', { class: 'auth__back' }, h('button', { class: 'btn btn--ghost btn--small', type: 'button', onclick: () => switchTab('connexion') }, '← Retour à la connexion'), h('h2', null, 'Mot de passe oublié'))

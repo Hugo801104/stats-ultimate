@@ -11,10 +11,11 @@ import { downloadText, fileStamp, readFileText } from '../files';
 import { canPromptInstall, isIOS, isStandalone, promptInstall } from '../install';
 import { requestRender, type View } from '../router';
 import { accountSection } from './account';
+import { KEY_PREFIX } from '../../legacyKeys';
 import { legalLinks } from './legal';
 import { getSession } from '../../cloud/session';
 
-const BACKUP_KEY = 'stats-ultimate-plouf:last-backup';
+const BACKUP_KEY = `${KEY_PREFIX}last-backup`;
 
 function lastBackup(): number | null {
   try {
@@ -129,7 +130,7 @@ export function settingsView(): View {
       h('p', { class: stale ? 'form-error' : 'muted' }, inCloud ? 'Tes données sont aussi enregistrées dans ton espace en ligne. Le fichier de sauvegarde reste utile pour garder une copie ou les transférer.' : backupAt ? `Dernière sauvegarde : ${dateFmt.format(new Date(backupAt))}.${stale ? ' Pense à en refaire une.' : ''}` : hasData ? 'Aucune sauvegarde faite sur cet appareil. Les données ne sont stockées que dans ce navigateur : exporte-les régulièrement.' : 'Les données sont stockées dans ce navigateur, sans serveur.'),
       h('div', { class: 'stack' },
         h('button', { class: 'btn btn--primary', type: 'button', onclick: () => {
-          downloadText(`plouf-sauvegarde-${fileStamp()}.json`, backupJson(getState()), 'application/json');
+          downloadText(`stats-ultimate-sauvegarde-${fileStamp()}.json`, backupJson(getState()), 'application/json');
           markBackup();
           toast('Sauvegarde téléchargée.', { kind: 'success' });
           requestRender();
@@ -147,7 +148,7 @@ export function settingsView(): View {
         h('button', { class: 'btn', type: 'button', onclick: () => void loadDemo() }, 'Charger des données d’exemple'),
         h('button', { class: 'btn btn--danger-ghost', type: 'button', onclick: () => void wipe() }, 'Tout effacer'))),
     section('Informations légales', legalLinks()),
-    h('p', { class: 'hint center' }, 'Stats Ultimate · Les Plouf — version 0.1.0'),
+    h('p', { class: 'hint center' }, 'Stats Ultimate — version 0.2.0'),
   );
   return { el };
 }

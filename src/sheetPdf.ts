@@ -287,7 +287,7 @@ export function tournamentPdf(t: Tournament, games: TournamentGame[]): Uint8Arra
   return doc.toBytes();
 }
 
-/** Nom de fichier lisible : « feuille-plouf-disc-jockeys.pdf ». */
+/** Nom de fichier lisible : « feuille-les-albatros-disc-jockeys.pdf ». */
 export function pdfFileName(...parts: string[]): string {
   const slug = parts.join(' ')
     .normalize('NFD').replace(/[̀-ͯ]/g, '')

@@ -1,6 +1,6 @@
 {
-  "name": "Stats Ultimate · Les Plouf",
-  "short_name": "Stats Plouf",
+  "name": "Stats Ultimate",
+  "short_name": "Stats Ultimate",
   "description": "Saisie des stats pendant les matchs d'ultimate et analyse après, hors-ligne.",
   "lang": "fr",
   "start_url": "./",

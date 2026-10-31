@@ -126,10 +126,10 @@ describe('sauvegarde et exports', () => {
 
   it('résumé de match partageable', () => {
     const m = demo.matches[0]!;
-    const s = buildMatchSummary(m, demo.players, 'Les Plouf', demo.seasons[0]);
+    const s = buildMatchSummary(m, demo.players, 'Les Albatros', demo.seasons[0]);
     expect(s.pour).toBeGreaterThanOrEqual(0);
     const text = summaryText(s);
-    expect(text).toContain('🥏 Les Plouf');
+    expect(text).toContain('🥏 Les Albatros');
     expect(text).toContain('Disques perdus');
   });
 

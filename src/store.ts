@@ -1,7 +1,8 @@
+import { KEY_PREFIX } from './legacyKeys';
 import { defaultState, normalizeState } from './schema';
 import type { AppState } from './types';
 
-const STORAGE_KEY = 'stats-ultimate-plouf:state';
+const STORAGE_KEY = `${KEY_PREFIX}state`;
 
 let state: AppState = load();
 let lastSaveError: string | null = null;

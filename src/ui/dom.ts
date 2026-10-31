@@ -59,11 +59,28 @@ const ICONS: Record<string, string> = {
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
 };
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/**
+ * Construit l'icône élément par élément (sans innerHTML) : compatible avec la protection
+ * « Trusted Types » de la politique de sécurité, qui interdit toute insertion de HTML brut.
+ */
 export function icon(name: keyof typeof ICONS | string, size = 22): HTMLElement {
   const span = document.createElement('span');
   span.className = 'icon';
   span.setAttribute('aria-hidden', 'true');
-  span.innerHTML = `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] ?? ''}</svg>`;
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  const attrs: Record<string, string> = {
+    viewBox: '0 0 24 24', width: String(size), height: String(size), fill: 'none', stroke: 'currentColor',
+    'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+  };
+  for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v);
+  for (const shape of (ICONS[name] ?? '').matchAll(/<(\w+)([^>]*)\/>/g)) {
+    const el = document.createElementNS(SVG_NS, shape[1]!);
+    for (const a of (shape[2] ?? '').matchAll(/([\w-]+)="([^"]*)"/g)) el.setAttribute(a[1]!, a[2]!);
+    svg.appendChild(el);
+  }
+  span.appendChild(svg);
   return span;
 }
 

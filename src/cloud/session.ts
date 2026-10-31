@@ -1,6 +1,7 @@
 // État de connexion : compte Supabase, ou mode « sans compte » (données sur cet appareil uniquement).
 
 import type { AuthError, Session } from '@supabase/supabase-js';
+import { KEY_PREFIX } from '../legacyKeys';
 import { cloudEnabled, getClient, redirectUrl } from './client';
 
 export type AuthStatus = 'loading' | 'signed_out' | 'signed_in' | 'local';
@@ -15,7 +16,7 @@ export interface SessionState {
   notice: string | null;
 }
 
-const MODE_KEY = 'stats-ultimate-plouf:mode';
+const MODE_KEY = `${KEY_PREFIX}mode`;
 
 let state: SessionState = {
   status: cloudEnabled ? 'loading' : 'local',
@@ -142,10 +143,14 @@ export function dismissRecovery(): void {
   set({ recovery: false });
 }
 
-export async function signOut(): Promise<void> {
+/**
+ * `everywhere: false` : déconnecte cet appareil (fonctionne même hors-ligne).
+ * `everywhere: true` : révoque aussi les sessions de tous tes autres appareils (téléphone perdu…).
+ */
+export async function signOut(everywhere = false): Promise<void> {
   const sb = await getClient();
-  // « local » : déconnecte cet appareil même hors-ligne.
-  await sb.auth.signOut({ scope: 'local' });
+  const { error } = await sb.auth.signOut({ scope: everywhere ? 'global' : 'local' });
+  if (error && everywhere) throw new Error(friendlyAuthError(error));
   applySession(null);
 }
 

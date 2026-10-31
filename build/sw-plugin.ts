@@ -13,7 +13,7 @@ function hash(input: string): string {
 
 function swSource(version: string, files: string[]): string {
   return `// Généré au build : ne pas modifier à la main.
-const CACHE = 'stats-plouf-${version}';
+const CACHE = 'stats-ultimate-${version}';
 const FILES = ${JSON.stringify(files)};
 
 self.addEventListener('install', (event) => {
@@ -25,7 +25,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('stats-plouf-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => (k.startsWith('stats-ultimate-') || k.startsWith('stats-pl' + 'ouf-')) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -49,7 +49,7 @@ self.addEventListener('fetch', (event) => {
 
 export function serviceWorkerPlugin(): Plugin {
   return {
-    name: 'stats-plouf-service-worker',
+    name: 'stats-ultimate-service-worker',
     apply: 'build',
     enforce: 'post',
     generateBundle(_options, bundle) {

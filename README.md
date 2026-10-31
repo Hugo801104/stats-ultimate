@@ -1,4 +1,4 @@
-# Stats Ultimate · Les Plouf
+# Stats Ultimate
 
 Saisie rapide des stats pendant les matchs d'ultimate, analyse après, prévision météo pour l'entraînement.
 Application web installable (PWA), **local d'abord** : tout est stocké dans le navigateur (localStorage) et

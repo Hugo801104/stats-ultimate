@@ -1,3 +1,4 @@
+import { KEY_PREFIX } from './legacyKeys';
 // Prévision pour l'entraînement via Open-Meteo (gratuit, sans clé, position en paramètre).
 
 import type { WeatherSettings } from './types';
@@ -148,7 +149,7 @@ export async function fetchForecast(w: WeatherSettings, signal?: AbortSignal): P
   return parseForecast(await res.json());
 }
 
-const CACHE_KEY = 'stats-ultimate-plouf:forecast';
+const CACHE_KEY = `${KEY_PREFIX}forecast`;
 export interface CachedForecast {
   fetchedAt: number;
   latitude: number;

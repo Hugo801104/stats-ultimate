@@ -1,4 +1,4 @@
-# Sécurité — Stats Ultimate · Les Plouf
+# Sécurité — Stats Ultimate
 
 ## Signaler une faille
 
@@ -32,7 +32,9 @@ région Paris), dépôt GitHub et chaîne de déploiement.
 - Connexion par **PKCE** ; liens e-mail à usage unique ; jetons de session courts, renouvelés automatiquement.
 - **Création de compte protégée contre l’énumération** (Supabase ne révèle pas si un e-mail existe).
 - Limites de débit natives de Supabase sur la connexion, l’inscription et l’envoi d’e-mails.
-- Côté appli : 8 caractères minimum, confirmation du mot de passe, acceptation des CGU.
+- Côté appli : 8 caractères minimum avec lettres et chiffres (ou phrase de 14 caractères), refus des
+  mots de passe courants ou contenant l’e-mail, confirmation, acceptation des CGU.
+- « Déconnecter tous mes appareils » (Réglages) : révoque toutes les sessions en cas d’appareil perdu.
 
 **À régler dans le tableau de bord Supabase (non modifiable par code) :**
 1. Authentication → Policies (Password) : longueur minimale **8** et exiger lettres + chiffres
@@ -48,8 +50,12 @@ région Paris), dépôt GitHub et chaîne de déploiement.
 - **Droits minimaux** : `TRUNCATE` (qui ignore RLS), `TRIGGER`, `REFERENCES` retirés.
 - **Écritures contrôlées** : `save_app_state` refuse d’écraser une version plus récente (révision) ;
   taille limitée à 5 Mo par compte ; **au plus 1 écriture par seconde** et par compte (HTTP 429).
-- **Droit à l’effacement** : `delete_my_account()` supprime uniquement le compte appelant et, en
-  cascade, ses données. L’alerte « SECURITY DEFINER exécutable » du conseiller Supabase est attendue.
+- **Droit à l’effacement** : `delete_my_account()` (sans droits particuliers) appelle
+  `private.delete_user()`, placée dans un schéma non exposé par l’API, qui vérifie une seconde fois que
+  l’on ne supprime que son propre compte. Les données partent en cascade.
+- **Fermé par défaut** : toute future table ou fonction du schéma `public` est inaccessible aux visiteurs
+  non connectés tant qu’on ne l’ouvre pas explicitement.
+- Conseiller de sécurité Supabase : plus aucune alerte, sauf l’option payante ci-dessus.
 - Fonctions avec `search_path` vide (protège contre le détournement de schéma).
 
 Tests réalisés (dans des transactions annulées, sans toucher aux vrais comptes) :
@@ -61,10 +67,11 @@ isolation entre deux comptes ✅ · lecture/écriture anonymes refusées ✅ · 
 - **Politique de sécurité du contenu (CSP)** : seuls les scripts du site s’exécutent ; connexions
   autorisées uniquement vers le site, le projet Supabase et l’API météo. Testé : une requête vers un autre
   domaine est bloquée → un script injecté ne pourrait pas exfiltrer la session.
+- **Trusted Types** : le navigateur refuse toute insertion de HTML brut dans la page (protection
+  contre les injections de code) ; l’appli n’en utilise plus aucune, même pour les icônes.
 - **Anti-clickjacking** : l’appli refuse de s’afficher dans une iframe (GitHub Pages ne permet pas
   l’en-tête `frame-ancestors`).
-- **Pas d’injection HTML** : tout le texte est inséré via `textContent` ; la seule utilisation
-  d’`innerHTML` concerne des icônes statiques du code.
+- **Pas d’injection HTML** : tout le texte est inséré via `textContent`, aucun `innerHTML`.
 - Fichiers importés (sauvegarde JSON, CSV) validés et nettoyés avant usage.
 - Aucun script tiers, aucun CDN, aucune mesure d’audience, aucun cookie. HTTPS imposé.
 - La clé Supabase *publishable* est visible dans l’appli en ligne : c’est prévu par Supabase, elle ne
@@ -88,12 +95,16 @@ isolation entre deux comptes ✅ · lecture/écriture anonymes refusées ✅ · 
 - Détection de secrets + blocage à l’envoi (push protection) actifs.
 - Alertes et mises à jour de sécurité Dependabot actives ; mises à jour hebdomadaires configurées.
 - `npm audit` : **0 vulnérabilité** (outils de développement mis à jour : Vite 8, Vitest 5).
-- Le workflow n’a que les droits nécessaires ; il lance les tests avant chaque publication.
+- Workflow de déploiement : actions épinglées sur une empreinte de commit, droits minimaux job par job,
+  installation sans scripts de paquets, publication bloquée en cas de faille grave dans une dépendance.
+- Seules les actions officielles GitHub sont autorisées à s’exécuter dans le dépôt.
+- Analyse de code automatique (CodeQL) et signalement privé des failles activés.
+- Branche `main` protégée : ni suppression, ni réécriture de l’historique.
 
 **À faire sur GitHub / comptes :**
 1. Activer la **double authentification (2FA)** sur les comptes GitHub et Supabase — la mesure la plus
    importante : qui prend ces comptes prend le site et la base.
-2. Protéger la branche `main` (interdire suppression et réécriture forcée de l’historique).
+2. (Fait) Branche `main` protégée.
 
 ### 6. RGPD et obligations légales
 

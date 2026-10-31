@@ -9,6 +9,7 @@ import type { AppState } from '../../types';
 import { confirmDialog, errorMessage, field, openModal, toast } from '../components';
 import { h } from '../dom';
 import { downloadText, fileStamp } from '../files';
+import { passwordProblem } from '../../cloud/password';
 
 const STATUS_LABEL: Record<SyncStatus, string> = {
   off: 'Synchronisation inactive',
@@ -63,6 +64,10 @@ export function accountSection(): HTMLElement {
       h('button', { class: 'btn btn--danger-ghost', type: 'button', onclick: () => void signOutFlow() }, 'Se déconnecter'),
     ),
     h('details', { class: 'danger-zone' },
+      h('summary', null, 'Appareil perdu ?'),
+      h('p', { class: 'hint' }, 'Déconnecte ton compte de TOUS les appareils (téléphone perdu, ordinateur partagé…). Pense ensuite à changer ton mot de passe.'),
+      h('button', { class: 'btn', type: 'button', onclick: () => void signOutEverywhere() }, 'Déconnecter tous mes appareils')),
+    h('details', { class: 'danger-zone' },
       h('summary', null, 'Supprimer mon compte'),
       h('p', { class: 'hint' }, 'Efface définitivement ton compte et toutes tes données en ligne. Télécharge d’abord une sauvegarde si tu veux les garder.'),
       h('button', { class: 'btn btn--danger', type: 'button', onclick: () => openDeleteDialog() }, 'Supprimer définitivement mon compte')),
@@ -91,6 +96,24 @@ async function signOutFlow(): Promise<void> {
   toast('Déconnecté.');
 }
 
+async function signOutEverywhere(): Promise<void> {
+  const ok = await confirmDialog('Déconnecter ton compte de tous tes appareils, y compris celui-ci ? Tes données restent dans ton espace en ligne.', 'Tout déconnecter', true);
+  if (!ok) return;
+  const synced = await flushBeforeSignOut();
+  if (!synced) {
+    const force = await confirmDialog('Des modifications de cet appareil n’ont pas pu être envoyées et seront perdues. Continuer ?', 'Continuer', true);
+    if (!force) return;
+  }
+  try {
+    await signOut(true);
+  } catch (err) {
+    toast(errorMessage(err), { kind: 'error' });
+    return;
+  }
+  clearLocalAfterSignOut();
+  toast('Tous tes appareils ont été déconnectés.', { kind: 'success' });
+}
+
 function openDeleteDialog(): void {
   const s = getSession();
   const input = h('input', { type: 'text', autocomplete: 'off', placeholder: 'SUPPRIMER' });
@@ -99,7 +122,7 @@ function openDeleteDialog(): void {
   const form = h('form', { class: 'form', novalidate: true },
     h('p', null, 'Le compte ', h('b', null, s.email ?? ''), ' et toutes ses données en ligne seront effacés immédiatement. C’est irréversible.'),
     h('button', { class: 'btn btn--small', type: 'button', onclick: () => {
-      downloadText(`plouf-sauvegarde-${fileStamp()}.json`, backupJson(getState()), 'application/json');
+      downloadText(`stats-ultimate-sauvegarde-${fileStamp()}.json`, backupJson(getState()), 'application/json');
       toast('Sauvegarde téléchargée.', { kind: 'success' });
     } }, 'Télécharger d’abord une sauvegarde'),
     field('Pour confirmer, tape SUPPRIMER', input),
@@ -156,7 +179,7 @@ export function openConflictDialog(c: ConflictInfo): Promise<'cloud' | 'device' 
           h('p', { class: 'hint' }, `Modifié le ${updated}`),
           h('button', { class: 'btn btn--primary btn--block', type: 'button', onclick: () => answer('cloud') }, 'Garder la version en ligne'))),
       h('button', { class: 'btn btn--ghost btn--small', type: 'button', onclick: () => {
-        downloadText(`plouf-sauvegarde-appareil-${fileStamp()}.json`, backupJson(getState()), 'application/json');
+        downloadText(`stats-ultimate-sauvegarde-appareil-${fileStamp()}.json`, backupJson(getState()), 'application/json');
         toast('Sauvegarde de cet appareil téléchargée.', { kind: 'success' });
       } }, 'Télécharger d’abord une sauvegarde de cet appareil'),
     );
@@ -177,7 +200,7 @@ export function openPasswordDialog(fromRecovery: boolean): void {
   const submit = h('button', { class: 'btn btn--primary', type: 'submit' }, 'Enregistrer le mot de passe');
   const form = h('form', { class: 'form', novalidate: true },
     fromRecovery ? h('p', null, 'Choisis ton nouveau mot de passe.') : null,
-    field('Nouveau mot de passe', pw, '8 caractères minimum.'),
+    field('Nouveau mot de passe', pw, '8 caractères minimum, lettres et chiffres (ou une phrase d’au moins 14 caractères).'),
     field('Confirme-le', pw2),
     error,
     h('div', { class: 'modal__actions' }, submit));
@@ -185,7 +208,8 @@ export function openPasswordDialog(fromRecovery: boolean): void {
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const fail = (m: string): void => { error.textContent = m; error.hidden = false; };
-    if (pw.value.length < 8) return fail('8 caractères minimum.');
+    const weak = passwordProblem(pw.value, getSession().email ?? '');
+    if (weak) return fail(weak);
     if (pw.value !== pw2.value) return fail('Les deux mots de passe ne correspondent pas.');
     submit.disabled = true;
     try {

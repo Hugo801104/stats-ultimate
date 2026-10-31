@@ -94,7 +94,7 @@ export async function renderSummaryImage(s: MatchSummary): Promise<Blob> {
   ctx.textAlign = 'center';
   ctx.font = `600 30px ${font}`;
   ctx.globalAlpha = 0.6;
-  ctx.fillText('Stats Ultimate · Les Plouf', W / 2, H - 50);
+  ctx.fillText('Stats Ultimate', W / 2, H - 50);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Création de l'image impossible."))), 'image/png');

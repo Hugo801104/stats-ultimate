@@ -48,7 +48,7 @@ export function defaultState(now: Date = new Date()): AppState {
     tournaments: [],
     settings: {
       currentSeasonId: season.id,
-      teamName: 'Les Plouf',
+      teamName: 'Mon équipe',
       lineSize: 7,
       weather: { ...DEFAULT_WEATHER },
     },

@@ -7,7 +7,7 @@ import type { TeamSide, TournamentGame } from './types';
 const latin1 = (bytes: Uint8Array): string => Array.from(bytes, (b) => String.fromCharCode(b)).join('');
 
 function sampleGame(points: number): TournamentGame {
-  const g = newGame({ label: 'Poule A – match 3', field: '2', time: '10:30', teamA: 'Les Plouf', teamB: 'Disc Jockeys', scorekeeper: 'Les Frisés', rules: { ...DEFAULT_RULES, pointCap: 15 } });
+  const g = newGame({ label: 'Poule A – match 3', field: '2', time: '10:30', teamA: 'Les Albatros', teamB: 'Disc Jockeys', scorekeeper: 'Les Frisés', rules: { ...DEFAULT_RULES, pointCap: 15 } });
   startClock(g, 0);
   for (let i = 0; i < points; i++) g.goals.push({ id: `g${i}`, team: (i % 3 === 2 ? 'B' : 'A') as TeamSide, atMs: (i + 1) * 95_000 });
   callTimeout(g, 'B', 600_000);
@@ -47,7 +47,7 @@ describe('générateur PDF', () => {
 
 describe('feuille de match PDF', () => {
   it('feuille simple sur une page', () => {
-    const t = newTournament('Tournoi de la Toussaint', '2026-10-31', 'La Chevrolière', ['Les Plouf', 'Disc Jockeys', 'Les Frisés'], DEFAULT_RULES);
+    const t = newTournament('Tournoi de la Toussaint', '2026-10-31', 'La Chevrolière', ['Les Albatros', 'Disc Jockeys', 'Les Frisés'], DEFAULT_RULES);
     const g = sampleGame(19);
     const s = latin1(gameSheetPdf(t, g));
     expect(s).toContain('/Count 1');
@@ -65,6 +65,6 @@ describe('feuille de match PDF', () => {
     expect(latin1(bytes)).toContain('/Count 3');
   });
   it('nom de fichier sans accents ni espaces', () => {
-    expect(pdfFileName('feuille', 'Les Plouf', 'Disc Jockeys à Nantes')).toBe('feuille-les-plouf-disc-jockeys-a-nantes.pdf');
+    expect(pdfFileName('feuille', 'Les Albatros', 'Disc Jockeys à Nantes')).toBe('feuille-les-albatros-disc-jockeys-a-nantes.pdf');
   });
 });

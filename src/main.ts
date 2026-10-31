@@ -79,7 +79,7 @@ function renderRoot(): boolean {
       root!.replaceChildren(authHost);
       window.scrollTo(0, 0);
     }
-    document.title = `${route.name === 'legal' ? 'Informations légales' : 'Connexion'} · Stats Ultimate · Les Plouf`;
+    document.title = `${route.name === 'legal' ? 'Informations légales' : 'Connexion'} · Stats Ultimate`;
     return false;
   }
   if (root!.firstChild !== shell) {
@@ -148,7 +148,7 @@ function render(): void {
     if (active) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   }
-  document.title = `${TITLES[route.name]} · Stats Ultimate · Les Plouf`;
+  document.title = `${TITLES[route.name]} · Stats Ultimate`;
   if (routeChanged) {
     window.scrollTo(0, 0);
     main.focus({ preventScroll: true });
@@ -196,6 +196,10 @@ void navigator.storage?.persist?.().catch(() => undefined);
 // Hors-ligne : service worker (généré au build avec la liste des fichiers).
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('Service worker non enregistré', err));
+    // Trusted Types : seule l'adresse exacte du service worker est acceptée.
+    const tt = (window as unknown as { trustedTypes?: { createPolicy: (n: string, r: { createScriptURL: (u: string) => string }) => { createScriptURL: (u: string) => unknown } } }).trustedTypes;
+    const policy = tt?.createPolicy('sw', { createScriptURL: (u) => { if (u === './sw.js') return u; throw new Error('Adresse de script refusée.'); } });
+    const swUrl = (policy ? policy.createScriptURL('./sw.js') : './sw.js') as string;
+    navigator.serviceWorker.register(swUrl).catch((err) => console.warn('Service worker non enregistré', err));
   });
 }

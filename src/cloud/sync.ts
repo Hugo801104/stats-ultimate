@@ -9,6 +9,7 @@ import { normalizeState } from '../schema';
 import { getState, replaceState, subscribeChanges } from '../store';
 import type { AppState } from '../types';
 import { defaultState } from '../schema';
+import { KEY_PREFIX } from '../legacyKeys';
 import { getClient } from './client';
 
 export interface SyncMeta {
@@ -57,7 +58,7 @@ export interface ConflictInfo {
   remoteUpdatedAt: string;
 }
 
-const META_KEY = 'stats-ultimate-plouf:sync';
+const META_KEY = `${KEY_PREFIX}sync`;
 const PUSH_DELAY_MS = 1500;
 const POLL_MS = 120_000;
 

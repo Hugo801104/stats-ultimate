@@ -24,7 +24,7 @@ const ul = (...items: Child[]): HTMLElement => h('ul', null, items.map((i) => h(
 function mentions(): HTMLElement[] {
   return [
     sec('Éditeur du site',
-      h('p', null, `Le site et l’application « Stats Ultimate · Les Plouf » (${SITE}) sont édités à titre personnel et non commercial par `, h('b', null, EDITOR), ', particulier.'),
+      h('p', null, `Le site et l’application « Stats Ultimate » (${SITE}) sont édités à titre personnel et non commercial par `, h('b', null, EDITOR), ', particulier.'),
       h('p', null, 'Contact : ', mail(), '.'),
       h('p', null, `Directeur de la publication : ${EDITOR}.`)),
     sec('Hébergement',

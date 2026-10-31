@@ -78,7 +78,7 @@ export function pointsCsv(state: AppState): string {
   return toCsv(rows);
 }
 
-export const BACKUP_APP = 'stats-ultimate-plouf';
+export const BACKUP_APP = 'stats-ultimate';
 
 export function backupJson(state: AppState, now: Date = new Date()): string {
   return JSON.stringify({ app: BACKUP_APP, exportedAt: now.toISOString(), state }, null, 2);
